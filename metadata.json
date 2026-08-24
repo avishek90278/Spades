@@ -1,0 +1,6 @@
+{
+  "name": "Spades Master Pro",
+  "description": "Comprehensive Spades card game with strict rules, advanced AI bots (Easy, Medium, Expert), real-time multiplayer rooms, global matchmaking, and complete trick-taking and scoring logic.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
