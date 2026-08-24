@@ -60,7 +60,7 @@ export function createInitialTeamScores(): {
 }
 
 export function createDefaultPlayers(
-  humanName: string = 'You',
+  humanName: string = 'Me',
   botDifficulty: BotDifficulty = 'expert'
 ): Record<Position, Player> {
   return {
@@ -70,40 +70,40 @@ export function createDefaultPlayers(
       position: 'south',
       team: 'team_north_south',
       type: 'human',
-      avatar: '👑',
+      avatar: '👩‍🦰',
       isReady: true,
       connected: true,
     },
     west: {
       id: 'bot_west',
-      name: 'West (Ace Bot)',
+      name: 'Isabella',
       position: 'west',
       team: 'team_east_west',
       type: 'bot',
       botDifficulty,
-      avatar: '🤖',
+      avatar: '👧',
       isReady: true,
       connected: true,
     },
     north: {
       id: 'bot_north',
-      name: 'North (Partner AI)',
+      name: 'Ashley',
       position: 'north',
       team: 'team_north_south',
       type: 'bot',
       botDifficulty,
-      avatar: '🧠',
+      avatar: '👱‍♀️',
       isReady: true,
       connected: true,
     },
     east: {
       id: 'bot_east',
-      name: 'East (Duke Bot)',
+      name: 'Tyler',
       position: 'east',
       team: 'team_east_west',
       type: 'bot',
       botDifficulty,
-      avatar: '🦊',
+      avatar: '👵',
       isReady: true,
       connected: true,
     },
@@ -157,6 +157,12 @@ export function startNewRound(state: SpadesGameState): SpadesGameState {
     turn: firstToBid,
     roundNumber: state.roundNumber + 1,
     hands,
+    initialHands: {
+      north: [...hands.north],
+      east: [...hands.east],
+      south: [...hands.south],
+      west: [...hands.west],
+    },
     bids: {},
     currentTrick: { id: 1, cards: [] },
     completedTricks: [],
@@ -164,6 +170,36 @@ export function startNewRound(state: SpadesGameState): SpadesGameState {
     spadesBroken: false,
     tracker: createInitialTracker(),
     lastActionMessage: `Round ${state.roundNumber + 1} started. ${state.players[firstToBid].name} is bidding.`,
+    aiExplanation: undefined,
+  };
+}
+
+/**
+ * Restarts the current round with the exact same deal (as shown in reference video frame 00:00).
+ */
+export function restartSameDeal(state: SpadesGameState): SpadesGameState {
+  if (!state.initialHands) {
+    return startNewRound(state);
+  }
+
+  const firstToBid = getNextSeat(state.dealer);
+  return {
+    ...state,
+    phase: 'bidding',
+    turn: firstToBid,
+    hands: {
+      north: [...state.initialHands.north],
+      east: [...state.initialHands.east],
+      south: [...state.initialHands.south],
+      west: [...state.initialHands.west],
+    },
+    bids: {},
+    currentTrick: { id: 1, cards: [] },
+    completedTricks: [],
+    tricksWon: { north: 0, east: 0, south: 0, west: 0 },
+    spadesBroken: false,
+    tracker: createInitialTracker(),
+    lastActionMessage: `Replaying round ${state.roundNumber}. ${state.players[firstToBid].name} is bidding.`,
     aiExplanation: undefined,
   };
 }

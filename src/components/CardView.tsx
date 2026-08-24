@@ -1,6 +1,14 @@
 import React from 'react';
 import { Card, Suit } from '../types/spades';
 import { motion } from 'motion/react';
+import {
+  SuitSVG,
+  AceOfSpadesCenterpiece,
+  CourtCardIllustration,
+  PipMatrix,
+  LargeCornerPip,
+  VIPSpadesCardBack,
+} from './CardArtwork';
 
 interface CardViewProps {
   card?: Card;
@@ -9,38 +17,23 @@ interface CardViewProps {
   isSelected?: boolean;
   onClick?: () => void;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'trick' | 'fan';
   rotation?: number;
   highlightNilRisk?: boolean;
+  customWidth?: number;
+  customHeight?: number;
+  customFontSize?: number;
+  customSuitSize?: number;
+  isLastCardInHand?: boolean;
 }
 
 export const SuitIcon: React.FC<{ suit: Suit; className?: string }> = ({ suit, className = 'w-4 h-4' }) => {
-  switch (suit) {
-    case 'spades':
-      return (
-        <svg viewBox="0 0 24 24" className={`${className} fill-[#111111]`} aria-label="Spades">
-          <path d="M12 2C11 5 6 9 6 13c0 3.3 2.7 6 6 6 .4 0 .8 0 1.2-.1-1.2 1.5-2.2 3.1-2.2 4.1h2c0-1.8 1.5-3.5 2-4 0 0 .5.5 2 4h2c0-1-1-2.6-2.2-4.1.4.1.8.1 1.2.1 3.3 0 6-2.7 6-6 0-4-5-8-6-11z" />
-        </svg>
-      );
-    case 'hearts':
-      return (
-        <svg viewBox="0 0 24 24" className={`${className} fill-[#DC2626]`} aria-label="Hearts">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-        </svg>
-      );
-    case 'diamonds':
-      return (
-        <svg viewBox="0 0 24 24" className={`${className} fill-[#DC2626]`} aria-label="Diamonds">
-          <path d="M12 2L3 12l9 10 9-10L12 2z" />
-        </svg>
-      );
-    case 'clubs':
-      return (
-        <svg viewBox="0 0 24 24" className={`${className} fill-[#111111]`} aria-label="Clubs">
-          <path d="M12 2a4 4 0 0 0-4 4c0 1.3.6 2.4 1.5 3.1C7.8 9.5 6 11 6 13a4 4 0 0 0 4 4c.3 0 .7 0 1-.1-1 1.4-1.8 2.7-2 3.1h6c-.2-.4-1-1.7-2-3.1.3.1.7.1 1 .1a4 4 0 0 0 4-4c0-2-1.8-3.5-3.5-3.9.9-.7 1.5-1.8 1.5-3.1a4 4 0 0 0-4-4z" />
-        </svg>
-      );
-  }
+  const isRed = suit === 'hearts' || suit === 'diamonds';
+  return (
+    <span className={`inline-flex items-center justify-center shrink-0 ${isRed ? 'text-[#DE1A24]' : 'text-[#0D1117]'}`}>
+      <SuitSVG suit={suit} className={className} />
+    </span>
+  );
 };
 
 export const CardView: React.FC<CardViewProps> = ({
@@ -52,76 +45,200 @@ export const CardView: React.FC<CardViewProps> = ({
   className = '',
   size = 'md',
   rotation = 0,
+  customWidth,
+  customHeight,
+  customFontSize,
+  customSuitSize,
+  isLastCardInHand = false,
 }) => {
+  // Dimension definitions with authentic playing card aspect ratio
   const sizeClasses = {
-    sm: 'w-12 h-18 text-xs rounded-lg shadow-md',
-    md: 'w-18 h-26 sm:w-20 sm:h-28 text-sm rounded-lg shadow-lg',
-    lg: 'w-22 h-32 sm:w-26 sm:h-38 text-base rounded-xl shadow-xl',
+    xs: 'w-7 h-10 text-[9px] rounded-md',
+    sm: 'w-12 h-18 text-xs rounded-xl',
+    md: 'w-18 h-26 sm:w-22 sm:h-32 text-xs sm:text-sm rounded-xl sm:rounded-2xl',
+    lg: 'w-24 h-34 sm:w-28 sm:h-40 text-sm sm:text-base rounded-2xl',
+    trick: 'w-[82px] h-[118px] sm:w-[104px] sm:h-[148px] md:w-[116px] md:h-[164px] rounded-xl sm:rounded-2xl',
+    fan: 'w-[52px] h-[130px] sm:w-[64px] sm:h-[155px] md:w-[78px] md:h-[180px] rounded-t-xl sm:rounded-t-2xl',
   }[size];
 
+  const customStyle: React.CSSProperties = {
+    ...(customWidth ? { width: `${customWidth}px` } : {}),
+    ...(customHeight ? { height: `${customHeight}px` } : {}),
+  };
+
+  // Face down card back (VIP Spades Green Medallion)
   if (isFaceDown || !card) {
     return (
       <motion.div
-        id={card ? `card-back-${card.id}` : 'card-back'}
-        whileHover={onClick ? { scale: 1.05, y: -4 } : {}}
-        className={`relative select-none transition-transform bg-[#161616] border border-[#D4AF37]/40 flex items-center justify-center p-1 overflow-hidden shadow-xl ${sizeClasses} ${className}`}
-        style={{ transform: `rotate(${rotation}deg)` }}
-        onClick={onClick}
+        animate={{ rotate: rotation }}
+        style={customStyle}
+        className={`select-none shrink-0 ${sizeClasses} ${className}`}
       >
-        <div className="w-full h-full border border-[#D4AF37]/20 rounded-md flex flex-col items-center justify-center bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:8px_8px] bg-[#111111]">
-          <div className="w-6 h-6 rounded-full bg-[#1A1A1A] flex items-center justify-center border border-[#D4AF37]/50 shadow-inner">
-            <span className="text-[#D4AF37] text-xs font-serif font-bold">♠</span>
-          </div>
-        </div>
+        <VIPSpadesCardBack />
       </motion.div>
     );
   }
 
   const isRed = card.suit === 'hearts' || card.suit === 'diamonds';
-  const textColor = isRed ? 'text-[#DC2626]' : 'text-[#111111]';
+  
+  // High contrast color scheme: vibrant bright red/black for playable, darker muted tones for non-playable
+  const rankColorClass = isPlayable
+    ? isRed ? 'text-[#DE1A24]' : 'text-[#0D1117]'
+    : isRed ? 'text-[#8A242B]' : 'text-[#202933]';
 
+  const isAceOfSpades = card.rank === 'A' && card.suit === 'spades';
+  const isCourtCard = card.rank === 'J' || card.rank === 'Q' || card.rank === 'K';
+
+  // 1. MINI / CHIP MODE (for modal lists)
+  if (size === 'xs') {
+    return (
+      <div
+        style={customStyle}
+        className={`relative select-none bg-[#F5F2EA] border border-[#CBD5E1] flex flex-col items-center justify-center p-0.5 shadow-sm shrink-0 ${sizeClasses} ${className}`}
+      >
+        <span
+          className={`font-['Bebas_Neue',sans-serif] text-base leading-none ${rankColorClass}`}
+        >
+          {card.rank}
+        </span>
+        <div className={`mt-0.5 ${rankColorClass}`}>
+          <SuitSVG suit={card.suit} className="w-2.5 h-2.5" />
+        </div>
+      </div>
+    );
+  }
+
+  // 2. FAN MODE: Hand layout with high-contrast playable vs dark-toned unplayable
+  if (size === 'fan') {
+    const fontSize = customFontSize || 28;
+    const suitIconPx = customSuitSize || 18;
+
+    return (
+      <motion.div
+        whileHover={
+          isPlayable && onClick
+            ? { y: -26, transition: { duration: 0.12 } }
+            : {}
+        }
+        onClick={isPlayable && onClick ? onClick : undefined}
+        style={customStyle}
+        className={`relative select-none transition-all flex flex-col justify-between p-1 shrink-0 overflow-hidden ${
+          isPlayable
+            ? 'bg-gradient-to-b from-[#FFFFFF] via-[#FFFDF9] to-[#F3F0E6] border-t border-l border-r border-[#CBD5E1]'
+            : 'bg-gradient-to-b from-[#606E7D] via-[#525E6B] to-[#45505B] border-t border-l border-r border-[#3B4651]'
+        } ${
+          isSelected
+            ? 'ring-3 ring-[#FBBF24] shadow-[0_24px_42px_rgba(0,0,0,0.85),-8px_6px_22px_rgba(0,0,0,0.65)] z-40'
+            : isPlayable
+            ? 'cursor-pointer active:scale-95 shadow-[-7px_3px_16px_rgba(0,0,0,0.48),0_6px_14px_rgba(0,0,0,0.25)] hover:shadow-[-10px_6px_24px_rgba(0,0,0,0.65)]'
+            : 'cursor-not-allowed shadow-[-4px_2px_8px_rgba(0,0,0,0.45)]'
+        } rounded-t-xl sm:rounded-t-2xl ${className}`}
+      >
+        {/* Subtle highlight sheen for playable cards */}
+        {isPlayable && (
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none" />
+        )}
+
+        {/* Top Left Index: Bold Condensed Rank in Bebas Neue + Crisp Suit below */}
+        <div className="flex flex-col items-start leading-none pointer-events-none z-10 pl-0.5 pt-0.5">
+          <span
+            className={`font-['Bebas_Neue',sans-serif] tracking-normal font-normal select-none leading-[0.88] ${rankColorClass}`}
+            style={{ fontSize: `${fontSize}px` }}
+          >
+            {card.rank}
+          </span>
+          <div className={`mt-0.5 ${rankColorClass}`}>
+            <SuitSVG
+              suit={card.suit}
+              className="shrink-0"
+              style={{ width: `${suitIconPx}px`, height: `${suitIconPx}px` } as React.CSSProperties}
+            />
+          </div>
+        </div>
+
+        {/* Large watermark suit pip in bottom right corner */}
+        {(isLastCardInHand || isCourtCard || card.rank === 'A' || card.rank === '6' || card.rank === '7') && (
+          <div className={`absolute -right-2 -bottom-2 pointer-events-none ${isPlayable ? 'opacity-85' : 'opacity-35'} ${rankColorClass}`}>
+            <SuitSVG
+              suit={card.suit}
+              className={customWidth ? 'w-[75%] h-[75%]' : 'w-16 h-16 sm:w-20 sm:h-20'}
+            />
+          </div>
+        )}
+
+        {/* Court Card Center Miniature if court card */}
+        {isCourtCard && !isLastCardInHand && (
+          <div className={`absolute right-0.5 bottom-1 w-7 h-10 pointer-events-none ${isPlayable ? 'opacity-80' : 'opacity-30'}`}>
+            <CourtCardIllustration rank={card.rank as 'J' | 'Q' | 'K'} suit={card.suit} />
+          </div>
+        )}
+
+        {/* Darkened overlay for non-playable cards */}
+        {!isPlayable && (
+          <div className="absolute inset-0 bg-slate-900/15 pointer-events-none" />
+        )}
+      </motion.div>
+    );
+  }
+
+  // 3. TRICK / TABLE MODE: Large, realistic physical cards in center felt
   return (
     <motion.div
-      id={`card-${card.id}`}
       layout
       whileHover={
         isPlayable && onClick
-          ? { y: -14, scale: 1.06, transition: { duration: 0.15 } }
+          ? { y: -6, scale: 1.02, transition: { duration: 0.12 } }
           : {}
       }
       animate={{
-        y: isSelected ? -16 : 0,
+        y: isSelected ? -14 : 0,
         rotate: rotation,
       }}
       onClick={isPlayable && onClick ? onClick : undefined}
-      className={`relative select-none bg-[#FDFDFD] border font-sans transition-all ${textColor} ${sizeClasses} ${
+      style={customStyle}
+      className={`relative select-none bg-gradient-to-b from-[#FFFFFF] via-[#FAF8F2] to-[#EAE6DA] border border-[#CBD5E1] transition-all flex flex-col justify-between p-1.5 sm:p-2 shrink-0 overflow-hidden ${sizeClasses} ${
         isSelected
-          ? 'bg-[#FFFFFF] border-2 border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.4)] ring-1 ring-[#D4AF37]'
-          : isPlayable
-          ? 'border-[#D1D5DB] hover:border-[#D4AF37] hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] cursor-pointer'
-          : 'border-[#E5E7EB] opacity-50 cursor-not-allowed grayscale-[40%]'
+          ? 'ring-3 ring-[#FBBF24] shadow-[0_22px_44px_rgba(0,0,0,0.7)] z-30'
+          : 'shadow-[0_16px_36px_rgba(0,0,0,0.55),0_6px_14px_rgba(0,0,0,0.35)]'
       } ${className}`}
     >
-      {/* Top Left Index */}
-      <div className="absolute top-1 left-1 sm:top-1.5 sm:left-1.5 flex flex-col items-center leading-none">
-        <span className="font-extrabold tracking-tight text-xs sm:text-sm">{card.rank}</span>
-        <SuitIcon suit={card.suit} className="w-2.5 h-2.5 sm:w-3 sm:h-3 mt-0.5" />
+      {/* Top Left Rank + Suit */}
+      <div className="flex flex-col items-start leading-none pointer-events-none z-10 pl-0.5 pt-0.5">
+        <span
+          className={`font-['Bebas_Neue',sans-serif] tracking-normal font-normal text-xl sm:text-2xl md:text-3xl leading-[0.9] ${isRed ? 'text-[#DE1A24]' : 'text-[#0D1117]'}`}
+        >
+          {card.rank}
+        </span>
+        <div className={`mt-0.5 ${isRed ? 'text-[#DE1A24]' : 'text-[#0D1117]'}`}>
+          <SuitSVG suit={card.suit} className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+        </div>
       </div>
 
-      {/* Center Big Suit Icon & Value Display */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <SuitIcon suit={card.suit} className="w-6 h-6 sm:w-8 sm:h-8" />
-        {card.suit === 'spades' && (
-          <span className="text-[8px] font-mono font-bold tracking-widest text-[#D4AF37] bg-[#111111] px-1 py-0.2 rounded uppercase mt-0.5 shadow-sm">
-            TRUMP
-          </span>
+      {/* Center Card Content: Ace of Spades crest OR Royal Court portrait OR Pip Matrix */}
+      <div className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none overflow-hidden">
+        {isAceOfSpades ? (
+          <AceOfSpadesCenterpiece className="w-12 h-16 sm:w-16 sm:h-22 md:w-20 md:h-28" />
+        ) : isCourtCard ? (
+          <div className="w-10 h-16 sm:w-14 sm:h-22 md:w-18 md:h-28">
+            <CourtCardIllustration rank={card.rank as 'J' | 'Q' | 'K'} suit={card.suit} />
+          </div>
+        ) : (
+          <div className="scale-90 sm:scale-100 md:scale-110">
+            <PipMatrix rank={card.rank} suit={card.suit} isRed={isRed} />
+          </div>
         )}
       </div>
 
       {/* Bottom Right Inverted Index */}
-      <div className="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5 flex flex-col items-center leading-none rotate-180">
-        <span className="font-extrabold tracking-tight text-xs sm:text-sm">{card.rank}</span>
-        <SuitIcon suit={card.suit} className="w-2.5 h-2.5 sm:w-3 sm:h-3 mt-0.5" />
+      <div className="flex flex-col items-end leading-none rotate-180 pointer-events-none z-10 pr-0.5 pb-0.5">
+        <span
+          className={`font-['Bebas_Neue',sans-serif] tracking-normal font-normal text-xl sm:text-2xl md:text-3xl leading-[0.9] ${isRed ? 'text-[#DE1A24]' : 'text-[#0D1117]'}`}
+        >
+          {card.rank}
+        </span>
+        <div className={`mt-0.5 ${isRed ? 'text-[#DE1A24]' : 'text-[#0D1117]'}`}>
+          <SuitSVG suit={card.suit} className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+        </div>
       </div>
     </motion.div>
   );

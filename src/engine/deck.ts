@@ -97,17 +97,17 @@ export function dealHands(deck: Card[]): Record<Position, Card[]> {
  */
 export function sortHand(hand: Card[]): Card[] {
   const suitOrder: Record<Suit, number> = {
-    spades: 0,
-    hearts: 1,
-    clubs: 2,
-    diamonds: 3,
+    diamonds: 0,
+    clubs: 1,
+    hearts: 2,
+    spades: 3,
   };
 
   return [...hand].sort((a, b) => {
     if (suitOrder[a.suit] !== suitOrder[b.suit]) {
       return suitOrder[a.suit] - suitOrder[b.suit];
     }
-    return b.value - a.value;
+    return a.value - b.value;
   });
 }
 

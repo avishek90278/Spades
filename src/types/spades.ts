@@ -49,6 +49,8 @@ export interface Trick {
   winningCard?: Card;
 }
 
+export type CompletedTrick = Trick;
+
 export type GamePhase = 
   | 'lobby' 
   | 'dealing' 
@@ -125,6 +127,7 @@ export interface SpadesGameState {
   roundNumber: number;
   players: { [key in Position]: Player };
   hands: { [key in Position]: Card[] };
+  initialHands?: { [key in Position]: Card[] };
   bids: { [key in Position]?: PlayerBid };
   currentTrick: Trick;
   completedTricks: Trick[];

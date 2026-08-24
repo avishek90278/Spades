@@ -17,6 +17,7 @@ import {
   placePlayerBid,
   playCardMove,
   startNewRound,
+  restartSameDeal,
 } from './engine/spadesGame';
 import { calculateBotBid, selectBotCard } from './engine/botAI';
 import { useSound } from './hooks/useSound';
@@ -24,6 +25,8 @@ import { Navbar } from './components/Navbar';
 import { SpadesTable } from './components/SpadesTable';
 import { BiddingModal } from './components/BiddingModal';
 import { ScoreBoard } from './components/ScoreBoard';
+import { ScoreSheetModal } from './components/ScoreSheetModal';
+import { NewGameModal } from './components/NewGameModal';
 import { CardCounterHUD } from './components/CardCounterHUD';
 import { RoomLobby } from './components/RoomLobby';
 import { RulesGuideModal } from './components/RulesGuideModal';
@@ -46,6 +49,7 @@ export default function App() {
   const [showRules, setShowRules] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showScoreSheet, setShowScoreSheet] = useState<boolean>(false);
+  const [showNewGameModal, setShowNewGameModal] = useState<boolean>(false);
 
   // Matchmaking State
   const [isSearchingMatch, setIsSearchingMatch] = useState<boolean>(false);
@@ -360,6 +364,13 @@ export default function App() {
     }
   };
 
+  // Replay Same Deal
+  const handleSameDeal = () => {
+    if (gameState.mode === 'single_player') {
+      setGameState(restartSameDeal(gameState));
+    }
+  };
+
   // Send Emoji / Taunt
   const handleSendEmoji = (emoji: string) => {
     if (gameState.mode === 'single_player') {
@@ -392,21 +403,29 @@ export default function App() {
   const partnerPosition: Position = myPosition === 'north' ? 'south' : myPosition === 'south' ? 'north' : myPosition === 'east' ? 'west' : 'east';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950">
-      {/* Top Navigation */}
-      <Navbar
-        gameState={gameState}
-        muted={muted}
-        onToggleMute={() => setMuted(!muted)}
-        showHUD={showHUD}
-        onToggleHUD={() => setShowHUD(!showHUD)}
-        onOpenRules={() => setShowRules(true)}
-        onOpenSettings={() => setShowSettings(true)}
-        onReturnToLobby={handleReturnToLobby}
-      />
+    <div className={`bg-gradient-to-b from-[#051f30] via-[#0b4869] to-[#041a29] text-[#E2F1F8] flex flex-col font-sans selection:bg-[#FBBF24] selection:text-[#09293B] overflow-x-hidden ${
+      gameState.phase === 'lobby' ? 'min-h-screen overflow-y-auto' : 'h-screen max-h-screen overflow-hidden'
+    }`}>
+      {/* Top Navigation (Shown in Lobby mode) */}
+      {gameState.phase === 'lobby' && (
+        <Navbar
+          gameState={gameState}
+          muted={muted}
+          onToggleMute={() => setMuted(!muted)}
+          showHUD={showHUD}
+          onToggleHUD={() => setShowHUD(!showHUD)}
+          onOpenRules={() => setShowRules(true)}
+          onOpenSettings={() => setShowSettings(true)}
+          onReturnToLobby={handleReturnToLobby}
+        />
+      )}
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 flex flex-col lg:flex-row gap-5 items-start justify-center">
+      <main className={`flex-1 w-full mx-auto flex flex-col justify-center ${
+        gameState.phase === 'lobby'
+          ? 'max-w-7xl p-2 sm:p-4 md:p-6'
+          : 'p-0 max-w-5xl h-full max-h-full overflow-hidden items-center'
+      }`}>
         {gameState.phase === 'lobby' ? (
           /* Lobby / Game Mode Selection View */
           <div className="w-full flex justify-center py-4">
@@ -439,45 +458,50 @@ export default function App() {
             />
           </div>
         ) : (
-          /* Active Playing Table + Side Panels */
-          <>
-            {/* Center / Primary Spades Table Area */}
-            <div className="flex-1 w-full space-y-4">
-              <SpadesTable
-                gameState={gameState}
-                myPosition={myPosition}
-                onPlayCard={handlePlayCard}
-                onSendEmoji={handleSendEmoji}
-                chatBubbles={chatBubbles}
-              />
-            </div>
-
-            {/* Right Sidebar: Scoreboard & AI Telemetry HUD */}
-            <div className="w-full lg:w-80 xl:w-96 space-y-4 shrink-0">
-              <ScoreBoard
-                scores={gameState.scores}
-                history={gameState.history}
-                settings={gameState.settings}
-                roundNumber={gameState.roundNumber}
-              />
-
-              {showHUD && (
-                <CardCounterHUD
-                  tracker={gameState.tracker}
-                  gameState={gameState}
-                />
-              )}
-            </div>
-          </>
+          /* Active Playing Table (Full-bleed mobile, centered on desktop) */
+          <div className="w-full h-full max-h-full flex flex-col justify-center overflow-hidden">
+            <SpadesTable
+              gameState={gameState}
+              myPosition={myPosition}
+              onPlayCard={handlePlayCard}
+              onNewGame={() => setShowNewGameModal(true)}
+              onOpenRules={() => setShowRules(true)}
+              onOpenSettings={() => setShowSettings(true)}
+              onOpenScoreSheet={() => setShowScoreSheet(true)}
+              onToggleBooster={() => setShowHUD(!showHUD)}
+              onSendEmoji={handleSendEmoji}
+              chatBubbles={chatBubbles}
+              muted={muted}
+              onToggleMute={() => setMuted(!muted)}
+              onReturnToLobby={handleReturnToLobby}
+            />
+          </div>
         )}
       </main>
 
       {/* MODALS */}
 
+      {/* Forfeit / New Game Modal (Frame 00:00) */}
+      <NewGameModal
+        isOpen={showNewGameModal}
+        onClose={() => setShowNewGameModal(false)}
+        onSameDeal={handleSameDeal}
+        onNewGame={() => handleStartSinglePlayer('expert')}
+      />
+
+      {/* Match Score Sheet Modal */}
+      <ScoreSheetModal
+        isOpen={showScoreSheet}
+        onClose={() => setShowScoreSheet(false)}
+        scores={gameState.scores}
+        history={gameState.history}
+        settings={gameState.settings}
+        roundNumber={gameState.roundNumber}
+      />
+
       {/* Bidding Modal */}
       {isHumanBidding && (
         <BiddingModal
-          hand={gameState.hands[myPosition] || []}
           position={myPosition}
           playerName={playerName}
           partnerName={gameState.players[partnerPosition].name}

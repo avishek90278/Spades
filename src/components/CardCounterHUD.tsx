@@ -1,7 +1,8 @@
 import React from 'react';
 import { CardTrackerState, Position, SpadesGameState, Suit } from '../types/spades';
-import { Brain, Cpu, Zap } from 'lucide-react';
+import { Activity, Cpu, Zap, Lock, Check } from 'lucide-react';
 import { SUIT_SYMBOLS } from '../engine/deck';
+import { SuitIcon } from './CardView';
 
 interface CardCounterHUDProps {
   tracker: CardTrackerState;
@@ -16,165 +17,147 @@ export const CardCounterHUD: React.FC<CardCounterHUDProps> = ({
   const positions: Position[] = ['north', 'east', 'south', 'west'];
 
   return (
-    <div id="card-counter-hud" className="bg-[#161616]/95 border border-[#2A2A2A] rounded-2xl p-4 text-[#E0E0E0] shadow-2xl space-y-4 backdrop-blur-md">
+    <div id="card-counter-hud" className="bg-gradient-to-b from-[#09293B] to-[#061D2B] border-2 border-[#165173] rounded-3xl p-3.5 sm:p-4 text-white shadow-2xl space-y-3.5 sm:space-y-4 backdrop-blur-md select-none">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#2A2A2A] pb-2.5">
+      <div className="flex items-center justify-between border-b border-[#165173] pb-2.5">
         <div className="flex items-center gap-2">
-          <Brain className="w-4 h-4 text-[#D4AF37]" />
-          <h3 className="font-serif italic text-base font-semibold text-white tracking-wide">
-            Telemetry & Card Counter
+          <Activity className="w-4 h-4 text-[#FBBF24]" />
+          <h3 className="text-sm sm:text-base font-black text-white tracking-wide">
+            Card Counter & AI Analytics
           </h3>
         </div>
-        <span className="text-[10px] font-mono bg-[#222222] text-[#D4AF37] border border-[#D4AF37]/40 px-2 py-0.5 rounded-full flex items-center gap-1">
-          <Zap className="w-3 h-3 text-[#D4AF37]" /> Bot Engine Active
+        <span className="text-[10px] font-mono bg-[#061D2B] text-[#4ADE80] border border-[#165173] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold">
+          <Zap className="w-3 h-3 text-[#4ADE80]" /> Active
         </span>
       </div>
 
       {/* Spades & Trump Status */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-[#111111] border border-[#2A2A2A] rounded-xl p-3">
-          <span className="text-[10px] uppercase tracking-wider text-[#888888] font-mono block">
-            Remaining Spades (Trump)
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+        <div className="bg-[#0B3147] border border-[#165173] rounded-2xl p-2.5 sm:p-3">
+          <span className="text-[10px] uppercase tracking-wider text-[#7DD3FC] font-mono font-bold block">
+            Remaining Spades
           </span>
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-black text-[#D4AF37] font-mono">{tracker.remainingSpades}</span>
-            <span className="text-xs text-[#888888] font-mono">/ 13 in game</span>
+            <span className="text-xl sm:text-2xl font-black text-[#4ADE80] font-mono">{tracker.remainingSpades}</span>
+            <span className="text-[11px] text-[#94A3B8] font-mono">/ 13 total</span>
           </div>
-          <div className="w-full bg-[#0A0A0A] h-1.5 rounded-full mt-2 overflow-hidden border border-[#222222]">
+          <div className="w-full bg-[#061D2B] h-1.5 rounded-full mt-2 overflow-hidden border border-[#165173]">
             <div
-              className="bg-[#D4AF37] h-full transition-all duration-300"
+              className="bg-[#4ADE80] h-full transition-all duration-300"
               style={{ width: `${(tracker.remainingSpades / 13) * 100}%` }}
             />
           </div>
         </div>
 
-        <div className="bg-[#111111] border border-[#2A2A2A] rounded-xl p-3 flex flex-col justify-between">
-          <span className="text-[10px] uppercase tracking-wider text-[#888888] font-mono block">
-            Spades Broken Status
+        <div className="bg-[#0B3147] border border-[#165173] rounded-2xl p-2.5 sm:p-3 flex flex-col justify-between">
+          <span className="text-[10px] uppercase tracking-wider text-[#7DD3FC] font-mono font-bold block">
+            Spades Lead Status
           </span>
           <div className="flex items-center gap-2 mt-1">
             <span
-              className={`text-xs font-bold px-2.5 py-1 rounded-md uppercase font-mono ${
+              className={`text-xs font-bold px-2 py-0.5 rounded-xl uppercase font-mono flex items-center gap-1 ${
                 gameState.spadesBroken
-                  ? 'bg-[#1F1B12] text-[#D4AF37] border border-[#D4AF37]/50'
-                  : 'bg-[#222222] text-[#888888] border border-[#333333]'
+                  ? 'bg-[#061D2B] text-[#4ADE80] border border-[#165173]'
+                  : 'bg-[#061D2B] text-[#94A3B8] border border-[#165173]'
               }`}
             >
-              {gameState.spadesBroken ? '✓ Broken (Lead OK)' : '✗ Not Broken'}
+              {gameState.spadesBroken ? (
+                <>
+                  <Check className="w-3 h-3 text-[#4ADE80]" />
+                  <span>Broken</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-3 h-3 text-[#94A3B8]" />
+                  <span>Locked</span>
+                </>
+              )}
             </span>
           </div>
-          <span className="text-[10px] text-[#888888] mt-1">
-            {gameState.spadesBroken ? 'Any player may lead Spades.' : 'Cannot lead Spades unless only trumps remain.'}
+          <span className="text-[10px] text-[#94A3B8] mt-1 truncate">
+            {gameState.spadesBroken ? 'Lead legal' : 'Cannot lead spades yet'}
           </span>
         </div>
       </div>
 
-      {/* Unplayed Boss Cards (Aces & Kings) Tracker */}
+      {/* Suit Counts Table */}
       <div className="space-y-1.5">
-        <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-wider block font-mono">
-          Boss Cards Tracker (Aces & Kings)
+        <span className="text-[10px] font-mono uppercase tracking-wider text-[#7DD3FC] font-bold block">
+          Played Cards by Suit:
         </span>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-1.5">
           {suits.map((suit) => {
-            const aceUnplayed = tracker.unplayedAces[suit];
-            const kingUnplayed = tracker.unplayedKings[suit];
+            const played = tracker.suitCounts[suit];
+            const remaining = 13 - played;
+            const isSpade = suit === 'spades';
+            const isRed = suit === 'hearts' || suit === 'diamonds';
+
             return (
               <div
                 key={suit}
-                className="bg-[#111111] border border-[#2A2A2A] rounded-lg p-2 flex flex-col items-center gap-1 text-center"
+                className="bg-[#0B3147] border border-[#165173] rounded-xl p-2 text-center"
               >
-                <span className="text-xs font-bold text-[#E0E0E0]">
-                  {SUIT_SYMBOLS[suit]} {suit.slice(0, 3).toUpperCase()}
-                </span>
-                <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <SuitIcon suit={suit} className="w-3.5 h-3.5" />
                   <span
-                    className={`px-1.5 py-0.2 rounded font-bold ${
-                      aceUnplayed ? 'bg-[#1F1B12] text-[#D4AF37] border border-[#D4AF37]/50' : 'text-[#444444] line-through'
+                    className={`text-xs font-mono font-bold uppercase ${
+                      isSpade
+                        ? 'text-[#4ADE80]'
+                        : isRed
+                        ? 'text-[#FB7185]'
+                        : 'text-[#38BDF8]'
                     }`}
                   >
-                    A
-                  </span>
-                  <span
-                    className={`px-1.5 py-0.2 rounded font-bold ${
-                      kingUnplayed ? 'bg-[#222222] text-white border border-[#444444]' : 'text-[#444444] line-through'
-                    }`}
-                  >
-                    K
+                    {suit.slice(0, 1)}
                   </span>
                 </div>
+                <div className="text-xs font-bold text-white font-mono">{remaining} left</div>
+                <div className="text-[9px] text-[#94A3B8] font-mono">{played} out</div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Known Void Matrix */}
+      {/* Void Detectors for All Players */}
       <div className="space-y-1.5">
-        <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-wider block font-mono">
-          Inferred Player Suit Voids
+        <span className="text-[10px] font-mono uppercase tracking-wider text-[#7DD3FC] font-bold block">
+          Player Suit Voids:
         </span>
-        <div className="rounded-xl border border-[#2A2A2A] bg-[#0E0E0E] overflow-hidden text-xs">
-          <table className="w-full text-center border-collapse">
-            <thead>
-              <tr className="border-b border-[#2A2A2A] text-[10px] text-[#888888] bg-[#161616]">
-                <th className="py-1.5 px-2 text-left">Player</th>
-                <th className="py-1.5 px-1">♠ Spd</th>
-                <th className="py-1.5 px-1">♥ Hrt</th>
-                <th className="py-1.5 px-1">♦ Dia</th>
-                <th className="py-1.5 px-1">♣ Clb</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#222222] font-mono text-[11px]">
-              {positions.map((pos) => {
-                const player = gameState.players[pos];
-                const voids = tracker.playerKnownVoids[pos];
-                return (
-                  <tr key={pos} className="hover:bg-[#1A1A1A]">
-                    <td className="py-1.5 px-2 text-left font-medium text-[#E0E0E0] flex items-center gap-1.5">
-                      <span>{player.avatar}</span>
-                      <span className="truncate max-w-[80px]">{player.name}</span>
-                    </td>
-                    {suits.map((suit) => (
-                      <td key={suit} className="py-1.5 px-1">
-                        {voids[suit] ? (
-                          <span className="text-rose-400 font-bold text-[10px] bg-[#2A0F14] px-1.5 py-0.5 rounded border border-rose-900/40">
-                            VOID
-                          </span>
-                        ) : (
-                          <span className="text-[#444444]">--</span>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-2 gap-1.5 text-xs font-mono">
+          {positions.map((pos) => {
+            const voids = tracker.knownVoids[pos] || [];
+            const playerName = gameState.players[pos]?.name || pos;
+            const isUs = pos === 'north' || pos === 'south';
+
+            return (
+              <div
+                key={pos}
+                className="bg-[#0B3147] border border-[#165173] rounded-xl p-2 flex items-center justify-between"
+              >
+                <span className={`font-bold ${isUs ? 'text-[#38BDF8]' : 'text-[#FB7185]'}`}>
+                  {playerName}
+                </span>
+                <div className="flex gap-1">
+                  {voids.length === 0 ? (
+                    <span className="text-[10px] text-[#94A3B8]">None</span>
+                  ) : (
+                    voids.map((v) => (
+                      <span
+                        key={v}
+                        className="text-[9px] bg-rose-950 text-rose-300 px-1 py-0.2 rounded border border-rose-800"
+                        title={`Void in ${v}`}
+                      >
+                        {SUIT_SYMBOLS[v]}
+                      </span>
+                    ))
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-
-      {/* AI Reasoning Telemetry */}
-      {gameState.aiExplanation && (
-        <div className="bg-[#111111] border border-[#D4AF37]/30 rounded-xl p-3 space-y-1 text-xs">
-          <div className="flex items-center gap-1.5 text-[#D4AF37] font-semibold">
-            <Cpu className="w-3.5 h-3.5" />
-            <span className="font-mono text-[11px]">Latest Bot Logic ({gameState.players[gameState.aiExplanation.position].name}):</span>
-          </div>
-          <p className="text-[#CCCCCC] leading-relaxed font-sans text-xs">
-            "{gameState.aiExplanation.reasoning}"
-          </p>
-          {gameState.aiExplanation.metrics?.evaluatedCandidates && (
-            <div className="pt-1.5 flex flex-wrap gap-1">
-              <span className="text-[10px] text-[#888888] font-mono">Scores:</span>
-              {gameState.aiExplanation.metrics.evaluatedCandidates.slice(0, 4).map((c: any, i: number) => (
-                <span key={i} className="text-[10px] font-mono bg-[#161616] px-1.5 py-0.5 rounded text-[#E0E0E0] border border-[#2A2A2A]">
-                  {c.card}: {c.score}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
